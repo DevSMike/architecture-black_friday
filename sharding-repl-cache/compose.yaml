@@ -1,0 +1,30 @@
+name: sharding-repl-cache
+include:
+  - mongo/compose.yaml
+  - redis/compose.yaml
+
+services:
+  pymongo_api:
+    container_name: pymongo_api
+    build:
+      context: api_app
+      dockerfile: Dockerfile
+    networks:
+      - app-network
+    depends_on:
+      - mongos_router
+      - mongos_router2
+    ports:
+      - "8080:8080"
+    environment:
+      REDIS_URL: "redis_1:6379,redis_2:6379,redis_3:6379"
+      MONGODB_URL: "mongodb://mongos_router:27024,mongos_router2:27025"
+      MONGODB_DATABASE_NAME: "somedb"
+
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 173.17.0.0/16
